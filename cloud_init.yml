@@ -1,0 +1,14 @@
+---
+- name: Cloud init
+  hosts: all
+  tasks:
+    - name: Install cloud init package
+      ansible.builtin.package:
+        name: cloud-init
+        state: present
+
+    - name: Start and enabled cloud init service
+      ansible.builtin.systemd:
+        name: cloud-init
+        enabled: true
+        state: started
