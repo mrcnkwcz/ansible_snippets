@@ -1,0 +1,56 @@
+---
+- name: Tuned
+  hosts: all
+  vars:
+    tuned_active_profile: ""
+    tuned_profiles:
+      - accelerator-performance
+      - aws
+      - balanced
+      - desktop
+      - epyc-eda
+      - hpc-compute
+      - intel-sst
+      - latency-performance
+      - network-latency
+      - network-throughput
+      - optimize-serial-console
+      - powersave
+      - throughput-performance
+      - virtual-guest
+      - virtual-host
+  tasks:
+    - name: Install tuned package
+      ansible.builtin.package:
+        name: tuned
+        state: present
+
+    - name: Start and enable tuned service
+      ansible.builtin.systemd:
+        name: tuned
+        enabled: true
+        state: started
+
+    - name: Get recommend profile
+      ansible.builtin.command:
+        tuned-adm recommend
+      register: tuned_recommend_out
+      changed_when: tuned_recommend_out.rc != 0
+
+    - name: Get active profile
+      ansible.builtin.command:
+        tuned-adm active
+      register: tuned_active_out
+      changed_when: tuned_active_out.rc != 0
+
+    - name: Show profiles info
+      ansible.builtin.debug:
+        msg:
+          - "Recommend profile: {{ tuned_recommend_out.stdout }}"
+          - "{{ tuned_active_out.stdout }}"
+
+    - name: Change active profile
+      ansible.builtin.command:
+        "tuned-adm profile {{ tuned_active_profile }}"
+      when: tuned_active_profile in tuned_profiles
+      changed_when: tuned_active_out.rc != 0
