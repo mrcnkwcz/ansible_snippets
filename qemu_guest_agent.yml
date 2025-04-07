@@ -1,0 +1,25 @@
+---
+- name: QEMU guest agent
+  hosts: all
+  tasks:
+    - name: Gather facts about virtualization type and role
+      ansible.builtin.setup:
+        gather_subset:
+          - virtualization_type
+          - virtualization_role
+
+    - name: Install and setup QEMU guest agent
+      when:
+        - ansible_facts["virtualization_type"] == "kvm"
+        - ansible_facts["virtualization_role"] == "guest"
+      block:
+        - name: Install QEMU guest agent package
+          ansible.builtin.package:
+            name: qemu-guest-agent
+            state: present
+
+        - name: Start and enabled QEMU guest agent service
+          ansible.builtin.systemd:
+            name: qemu-guest-agent
+            enabled: true
+            state: started
