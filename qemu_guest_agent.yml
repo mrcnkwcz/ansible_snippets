@@ -5,12 +5,10 @@
     - name: Gather facts about virtualization type and role
       ansible.builtin.setup:
         gather_subset:
-          - virtualization_type
           - virtualization_role
 
     - name: Install and setup QEMU guest agent
       when:
-        - ansible_facts["virtualization_type"] == "kvm"
         - ansible_facts["virtualization_role"] == "guest"
       block:
         - name: Install QEMU guest agent package
